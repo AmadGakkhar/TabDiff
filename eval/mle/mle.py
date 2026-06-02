@@ -71,7 +71,7 @@ _MODELS = {
                  'gamma': [0.0, 1.0],
                  'objective': ['binary:logistic'],
                  'nthread': [-1],
-                 'tree_method': ['gpu_hist']
+                 'tree_method': ['hist']
             },
         }
 
@@ -113,7 +113,7 @@ _MODELS = {
                  'gamma': [0.0, 1.0],
                  'objective': ['binary:logistic'],
                  'nthread': [-1],
-                 'tree_method': ['gpu_hist']
+                 'tree_method': ['hist']
             }
         }
 
@@ -139,7 +139,7 @@ _MODELS = {
                  'gamma': [0.0, 1.0],
                  'objective': ['reg:linear'],
                  'nthread': [-1],
-                 'tree_method': ['gpu_hist']
+                 'tree_method': ['hist']
             }
         },
         # {
