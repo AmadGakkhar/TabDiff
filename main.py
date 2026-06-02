@@ -14,6 +14,7 @@ if __name__ == '__main__':
     parser.add_argument('--no_wandb', action='store_true', help='disable wandb')
     parser.add_argument('--exp_name', type=str, default=None, help='Experiment name, used to name log directories and the wandb run name')
     parser.add_argument('--deterministic', action='store_true', help='Whether to make the entire process deterministic, i.e., fix global random seeds')
+    parser.add_argument('--resume', action='store_true', help='In train mode, resume from the latest model_*.pt checkpoint under ckpt/<dataname>/<exp_name> if one exists')
     
     # Configs for tabdiff
     parser.add_argument('--y_only', action='store_true', help='Train guidance model that only model the target column')

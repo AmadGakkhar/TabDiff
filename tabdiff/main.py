@@ -58,7 +58,16 @@ def main(args):
     num_samples_to_generate = None
     ckpt_path = None
     if args.mode == 'train':
-        print("NEW training is started")
+        if getattr(args, 'resume', False):
+            ckpt_parent_path = f"{curr_dir}/ckpt/{dataname}/{exp_name}"
+            cands = glob.glob(f"{ckpt_parent_path}/model_*.pt")
+            if cands:
+                ckpt_path = max(cands, key=lambda p: int(os.path.basename(p).split('_')[-1].split('.')[0]))
+                print(f"RESUME: continuing training from {ckpt_path}")
+            else:
+                print("RESUME requested but no model_*.pt checkpoint found; starting NEW training")
+        else:
+            print("NEW training is started")
     elif args.mode == 'test':
         num_samples_to_generate = args.num_samples_to_generate
         ckpt_path = args.ckpt_path
