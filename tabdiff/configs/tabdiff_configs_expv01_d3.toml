@@ -9,7 +9,7 @@ n_head = 1
 factor = 32
 bias = true
 use_mlp = true
-dim_t = 256
+dim_t = 512
 
 [diffusion_params]
 num_timesteps = 100
@@ -49,11 +49,11 @@ factor = 0.9
 closs_weight_schedule = "anneal"
 c_lambda = 1.0
 d_lambda = 1.0
-batch_size = 128
-steps = 1500
-weight_decay = 0.0001
-check_val_every = 150
-reduce_lr_patience = 15
+batch_size = 512
+steps = 3500
+weight_decay = 1e-05
+check_val_every = 350
+reduce_lr_patience = 35
 
 [sample]
 batch_size = 4096

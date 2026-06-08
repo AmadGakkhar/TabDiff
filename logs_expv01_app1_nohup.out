@@ -1,0 +1,133 @@
+nohup: ignoring input
+[2026-06-08 16:45:48] === Stage 1: build partitions + register datasets ===
+Source: 12336 rows | fraud=738 non-fraud=11598
+Each member: 738 fraud + 738 non-fraud = 1476 rows (~50% fraud)
+[expv01_m1] 738 fraud + 738 non-fraud = 1476 rows -> data/expv01_app1_partitions/expv01_m1.csv
+
+=== Registering expv01_m1 ===
+expv01_m1 (1328, 32) (0, 32) (148, 32) (1476, 32)
+Numerical (1328, 7)
+Categorical (1328, 24)
+Processing and Saving expv01_m1 Successfully!
+expv01_m1
+Total 1476
+Train 1328
+Val 0
+Test 148
+Num 7
+Int 7
+Cat 25
+[expv01_m2] 738 fraud + 738 non-fraud = 1476 rows -> data/expv01_app1_partitions/expv01_m2.csv
+
+=== Registering expv01_m2 ===
+expv01_m2 (1328, 32) (0, 32) (148, 32) (1476, 32)
+Numerical (1328, 7)
+Categorical (1328, 24)
+Processing and Saving expv01_m2 Successfully!
+expv01_m2
+Total 1476
+Train 1328
+Val 0
+Test 148
+Num 7
+Int 7
+Cat 25
+[expv01_m3] 738 fraud + 738 non-fraud = 1476 rows -> data/expv01_app1_partitions/expv01_m3.csv
+
+=== Registering expv01_m3 ===
+expv01_m3 (1328, 32) (0, 32) (148, 32) (1476, 32)
+Numerical (1328, 7)
+Categorical (1328, 24)
+Processing and Saving expv01_m3 Successfully!
+expv01_m3
+Total 1476
+Train 1328
+Val 0
+Test 148
+Num 7
+Int 7
+Cat 25
+[expv01_m4] 738 fraud + 738 non-fraud = 1476 rows -> data/expv01_app1_partitions/expv01_m4.csv
+
+=== Registering expv01_m4 ===
+expv01_m4 (1328, 32) (0, 32) (148, 32) (1476, 32)
+Numerical (1328, 7)
+Categorical (1328, 24)
+Processing and Saving expv01_m4 Successfully!
+expv01_m4
+Total 1476
+Train 1328
+Val 0
+Test 148
+Num 7
+Int 7
+Cat 25
+
+Member config written -> tabdiff/configs/tabdiff_configs_expv01_app1.toml
+
+Preparation complete. Run run_expv01_app1.sh to train and generate.
+[2026-06-08 16:45:57] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
+[2026-06-08 16:45:57] === Stage 2+3: train + generate (M=4, 625 fraud/member) ===
+[2026-06-08 16:45:57] >>> [expv01_m1] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 17:22:59] <<< [expv01_m1] TRAIN done
+[2026-06-08 17:22:59] >>> [expv01_m1] GENERATE (625 fraud rows, seed=1)
+[2026-06-08 17:23:02] !!! [expv01_m1] GENERATE FAILED (exit 1) — see logs/expv01_app1/gen_expv01_m1.log — aborting
+[2026-06-08 17:23:02] Original TabDiff config restored.
+[2026-06-08 18:39:40] === Stage 1: build partitions + register datasets ===
+Source: 12336 rows | fraud=738 non-fraud=11598
+Each member: 738 fraud + 738 non-fraud = 1476 rows (~50% fraud)
+[expv01_m1] already registered — skipping
+[expv01_m2] already registered — skipping
+[expv01_m3] already registered — skipping
+[expv01_m4] already registered — skipping
+
+Member config written -> tabdiff/configs/tabdiff_configs_expv01_app1.toml
+
+Preparation complete. Run run_expv01_app1.sh to train and generate.
+[2026-06-08 18:39:48] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
+[2026-06-08 18:39:48] === Stage 2+3: train + generate (M=4, 625 fraud/member) ===
+[2026-06-08 18:39:48] >>> [expv01_m1] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 18:39:59] <<< [expv01_m1] TRAIN done
+[2026-06-08 18:39:59] >>> [expv01_m1] GENERATE (625 fraud rows, seed=1)
+[2026-06-08 18:40:07] !!! [expv01_m1] GENERATE FAILED (exit 1) — see logs/expv01_app1/gen_expv01_m1.log — aborting
+[2026-06-08 18:40:07] Original TabDiff config restored.
+[2026-06-08 19:00:17] === Stage 1: build partitions + register datasets ===
+Source: 12336 rows | fraud=738 non-fraud=11598
+Each member: 738 fraud + 738 non-fraud = 1476 rows (~50% fraud)
+[expv01_m1] already registered — skipping
+[expv01_m2] already registered — skipping
+[expv01_m3] already registered — skipping
+[expv01_m4] already registered — skipping
+
+Member config written -> tabdiff/configs/tabdiff_configs_expv01_app1.toml
+
+Preparation complete. Run run_expv01_app1.sh to train and generate.
+[2026-06-08 19:00:21] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
+[2026-06-08 19:00:21] === Stage 2+3: train + generate (M=4, 625 fraud/member) ===
+[2026-06-08 19:00:21] >>> [expv01_m1] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 19:00:27] <<< [expv01_m1] TRAIN done
+[2026-06-08 19:00:27] >>> [expv01_m1] GENERATE (625 fraud rows, seed=1)
+[2026-06-08 19:00:53] <<< [expv01_m1] GENERATE done -> synthetic_outputs/expv01_app1/member_1_fraud.csv
+[2026-06-08 19:00:53] >>> [expv01_m2] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 19:40:46] <<< [expv01_m2] TRAIN done
+[2026-06-08 19:40:46] >>> [expv01_m2] GENERATE (625 fraud rows, seed=2)
+[2026-06-08 19:41:11] <<< [expv01_m2] GENERATE done -> synthetic_outputs/expv01_app1/member_2_fraud.csv
+[2026-06-08 19:41:11] >>> [expv01_m3] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 20:20:00] <<< [expv01_m3] TRAIN done
+[2026-06-08 20:20:00] >>> [expv01_m3] GENERATE (625 fraud rows, seed=3)
+[2026-06-08 20:20:24] <<< [expv01_m3] GENERATE done -> synthetic_outputs/expv01_app1/member_3_fraud.csv
+[2026-06-08 20:20:24] >>> [expv01_m4] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-08 20:59:44] <<< [expv01_m4] TRAIN done
+[2026-06-08 20:59:44] >>> [expv01_m4] GENERATE (625 fraud rows, seed=4)
+[2026-06-08 21:00:08] <<< [expv01_m4] GENERATE done -> synthetic_outputs/expv01_app1/member_4_fraud.csv
+[2026-06-08 21:00:08] === Stage 4: pool member outputs -> synthetic_outputs/expv01_app1/pooled_fraud.csv ===
+Pooled 2500 rows from 4 members | class counts: {1: 2500}
+  member 1: 625 fraud rows  <-  synthetic_outputs/expv01_app1/member_1_fraud.csv
+  member 2: 625 fraud rows  <-  synthetic_outputs/expv01_app1/member_2_fraud.csv
+  member 3: 625 fraud rows  <-  synthetic_outputs/expv01_app1/member_3_fraud.csv
+  member 4: 625 fraud rows  <-  synthetic_outputs/expv01_app1/member_4_fraud.csv
+[2026-06-08 21:00:09] === Approach 1 run finished ===
+[2026-06-08 21:00:09]     Pooled synthetic fraud  -> synthetic_outputs/expv01_app1/pooled_fraud.csv
+[2026-06-08 21:00:09]     Logs                    -> logs/expv01_app1/
+[2026-06-08 21:00:09]     Per-member fraud CSVs   -> synthetic_outputs/expv01_app1/member_*_fraud.csv
+[2026-06-08 21:00:09] Original TabDiff config restored.

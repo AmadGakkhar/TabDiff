@@ -1,0 +1,71 @@
+[2026-06-08 21:00:52] === Stage 1: build dosage partitions + register datasets ===
+Source: 12336 rows | fraud=738 non-fraud=11598
+[expv01_d1] config written -> tabdiff/configs/tabdiff_configs_expv01_d1.toml
+[expv01_d1] 738 fraud + 0 non-fraud = 738 rows | fraud share=100.0%
+
+=== Registering expv01_d1 ===
+expv01_d1 (664, 32) (0, 32) (74, 32) (738, 32)
+Numerical (664, 7)
+Categorical (664, 24)
+Processing and Saving expv01_d1 Successfully!
+expv01_d1
+Total 738
+Train 664
+Val 0
+Test 74
+Num 7
+Int 7
+Cat 25
+[expv01_d2] config written -> tabdiff/configs/tabdiff_configs_expv01_d2.toml
+[expv01_d2] 738 fraud + 2899 non-fraud = 3637 rows | fraud share=20.3%
+
+=== Registering expv01_d2 ===
+expv01_d2 (3273, 32) (0, 32) (364, 32) (3637, 32)
+Numerical (3273, 7)
+Categorical (3273, 24)
+Processing and Saving expv01_d2 Successfully!
+expv01_d2
+Total 3637
+Train 3273
+Val 0
+Test 364
+Num 7
+Int 7
+Cat 25
+[expv01_d3] config written -> tabdiff/configs/tabdiff_configs_expv01_d3.toml
+[expv01_d3] 738 fraud + 5799 non-fraud = 6537 rows | fraud share=11.3%
+
+=== Registering expv01_d3 ===
+expv01_d3 (5883, 32) (0, 32) (654, 32) (6537, 32)
+Numerical (5883, 7)
+Categorical (5883, 24)
+Processing and Saving expv01_d3 Successfully!
+expv01_d3
+Total 6537
+Train 5883
+Val 0
+Test 654
+Num 7
+Int 7
+Cat 25
+[expv01_d4] config written -> tabdiff/configs/tabdiff_configs_expv01_d4.toml
+[expv01_d4] 738 fraud + 11598 non-fraud = 12336 rows | fraud share=6.0%
+
+=== Registering expv01_d4 ===
+expv01_d4 (11102, 32) (0, 32) (1234, 32) (12336, 32)
+Numerical (11102, 7)
+Categorical (11102, 24)
+Processing and Saving expv01_d4 Successfully!
+expv01_d4
+Total 12336
+Train 11102
+Val 0
+Test 1234
+Num 7
+Int 7
+Cat 25
+
+Preparation complete. Run run_expv01_app2.sh to train and generate.
+[2026-06-08 21:00:58] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
+[2026-06-08 21:00:58] === Stage 2+3: train + generate (M=4 dosage models) ===
+[2026-06-08 21:00:58] >>> [expv01_d1] TRAIN start (fraud only)
