@@ -1,0 +1,6 @@
+[2026-06-03 13:51:25] === exp_3 run started (5500 steps, one model) ===
+[2026-06-03 13:51:25] >>> [car_fraud_exp3] TRAIN start
+[2026-06-03 17:59:28] <<< [car_fraud_exp3] TRAIN done
+[2026-06-03 17:59:28] >>> [car_fraud_exp3] GENERATE (original class distribution + size)
+[2026-06-03 18:01:03] <<< [car_fraud_exp3] GENERATE done -> synthetic_outputs/exp_3/car_insurance_fraud_synthetic.csv
+[2026-06-03 18:01:03] === exp_3 run finished ===
