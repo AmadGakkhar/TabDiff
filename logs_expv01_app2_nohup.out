@@ -69,3 +69,29 @@ Preparation complete. Run run_expv01_app2.sh to train and generate.
 [2026-06-08 21:00:58] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
 [2026-06-08 21:00:58] === Stage 2+3: train + generate (M=4 dosage models) ===
 [2026-06-08 21:00:58] >>> [expv01_d1] TRAIN start (fraud only)
+[2026-06-08 21:32:45] <<< [expv01_d1] TRAIN done
+[2026-06-08 21:32:45] >>> [expv01_d1] GENERATE (625 fraud rows, chunk=4096, max_iters=10)
+[2026-06-08 21:33:08] <<< [expv01_d1] GENERATE done -> synthetic_outputs/expv01_app2/expv01_d1_fraud.csv
+[2026-06-08 21:33:08] >>> [expv01_d2] TRAIN start (fraud + 25% majority)
+[2026-06-08 22:57:16] <<< [expv01_d2] TRAIN done
+[2026-06-08 22:57:16] >>> [expv01_d2] GENERATE (625 fraud rows, chunk=4096, max_iters=20)
+[2026-06-08 22:57:45] <<< [expv01_d2] GENERATE done -> synthetic_outputs/expv01_app2/expv01_d2_fraud.csv
+[2026-06-08 22:57:45] >>> [expv01_d3] TRAIN start (fraud + 50% majority)
+[2026-06-09 00:52:40] <<< [expv01_d3] TRAIN done
+[2026-06-09 00:52:40] >>> [expv01_d3] GENERATE (625 fraud rows, chunk=4096, max_iters=30)
+[2026-06-09 00:53:28] <<< [expv01_d3] GENERATE done -> synthetic_outputs/expv01_app2/expv01_d3_fraud.csv
+[2026-06-09 00:53:28] >>> [expv01_d4] TRAIN start (fraud + 100% majority)
+[2026-06-09 03:39:55] <<< [expv01_d4] TRAIN done
+[2026-06-09 03:39:55] >>> [expv01_d4] GENERATE (625 fraud rows, chunk=50000, max_iters=60)
+[2026-06-09 03:46:34] <<< [expv01_d4] GENERATE done -> synthetic_outputs/expv01_app2/expv01_d4_fraud.csv
+[2026-06-09 03:46:34] === Stage 4: pool dosage outputs -> synthetic_outputs/expv01_app2/pooled_fraud.csv ===
+Pooled 2500 rows from 4 dosage models | class counts: {1: 2500}
+  model 1: 625 fraud rows  <-  synthetic_outputs/expv01_app2/expv01_d1_fraud.csv
+  model 2: 625 fraud rows  <-  synthetic_outputs/expv01_app2/expv01_d2_fraud.csv
+  model 3: 625 fraud rows  <-  synthetic_outputs/expv01_app2/expv01_d3_fraud.csv
+  model 4: 625 fraud rows  <-  synthetic_outputs/expv01_app2/expv01_d4_fraud.csv
+[2026-06-09 03:46:34] === Approach 2 run finished ===
+[2026-06-09 03:46:34]     Pooled synthetic fraud  -> synthetic_outputs/expv01_app2/pooled_fraud.csv
+[2026-06-09 03:46:34]     Logs                    -> logs/expv01_app2/
+[2026-06-09 03:46:34]     Per-model fraud CSVs    -> synthetic_outputs/expv01_app2/expv01_d*_fraud.csv
+[2026-06-09 03:46:34] Original TabDiff config restored.
