@@ -51,7 +51,7 @@ def main(args):
     
     ## Load configs
     curr_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = f'{curr_dir}/configs/tabdiff_configs.toml'
+    config_path = getattr(args, 'config_path', None) or f'{curr_dir}/configs/tabdiff_configs.toml'
     raw_config = src.load_config(config_path)
     
     print(f"{args.mode.capitalize()} Mode is Enabled")

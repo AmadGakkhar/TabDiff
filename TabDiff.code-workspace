@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../helper_scripts"
+		},
+		{
+			"path": "../datasets"
+		}
+	],
+	"settings": {}
+}

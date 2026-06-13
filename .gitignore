@@ -16,3 +16,6 @@ tabdiff/result/
 logs/
 data/
 synthetic*/
+tabdiff/configs/
+logs*
+

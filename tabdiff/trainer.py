@@ -36,6 +36,9 @@ class Trainer:
             device=torch.device('cuda:1'),
             ckpt_path = None,
             y_only=False,
+            early_stop_patience=0,            # 0 => disabled; else stop after N epochs w/o held-out EMA-loss improvement
+            best_ckpt_start_epoch=4000,       # earliest epoch at which best/best_ema checkpoints may be saved
+            val_sample_size=None,             # cap on #samples generated during in-training evaluation (None => real_data_size)
             **kwargs
     ):
         self.y_only = y_only
@@ -69,7 +72,19 @@ class Trainer:
         self.metrics = metrics
         self.logger = logger
         self.check_val_every = check_val_every
-        
+
+        # Early-stopping / checkpoint-gating / validation-cost controls.
+        self.early_stop_patience = early_stop_patience
+        self.best_ckpt_start_epoch = best_ckpt_start_epoch
+        self.val_sample_size = val_sample_size
+        # Held-out iterator (the test split) for a TRUE overfitting signal; the
+        # original code computed "EMA loss" over the training set, which cannot
+        # detect overfitting. Fall back to train data if no held-out set exists.
+        from torch.utils.data import DataLoader
+        self.val_iter = None
+        if test_dataset is not None and len(test_dataset) > 0:
+            self.val_iter = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+
         self.device = device
         self.model_save_path = model_save_path
         self.result_save_path = result_save_path
@@ -104,11 +119,14 @@ class Trainer:
 
         return dloss, closs
     
-    def compute_loss(self):      # eval loss is not weighted
+    def compute_loss(self, data_iter=None):      # eval loss is not weighted
         curr_dloss = 0.0
         curr_closs = 0.0
         curr_count = 0
-        data_iter = self.train_iter
+        # Default to the held-out validation set so the "EMA loss" used for
+        # checkpoint selection / early stopping reflects generalization.
+        if data_iter is None:
+            data_iter = self.val_iter if self.val_iter is not None else self.train_iter
         for batch in data_iter:
             x = batch.float().to(self.device)
             self.diffusion.eval()
@@ -123,6 +141,7 @@ class Trainer:
     
     def run_loop(self):
         patience = 0
+        es_patience = 0     # epochs since the held-out EMA loss last improved
         closs_weight, dloss_weight = self.c_lambda, self.d_lambda
         best_loss = np.inf
         best_ema_loss = np.inf
@@ -224,7 +243,7 @@ class Trainer:
             update_ema(self.ema_cat_schedule.parameters(), self.diffusion.cat_schedule.parameters(), rate=self.ema_decay)
 
             # Save ckpt base on the best training loss
-            if total_loss < best_loss and self.curr_epoch > 4000:
+            if total_loss < best_loss and self.curr_epoch > self.best_ckpt_start_epoch:
                 best_loss = total_loss
                 to_remove = glob.glob(os.path.join(self.model_save_path, f"best_model_*"))
                 if to_remove:
@@ -250,19 +269,23 @@ class Trainer:
                 "ema_loss/total_loss": ema_total_loss
             }
             
-            # Save the best ema ckpt
-            if ema_total_loss < best_ema_loss and self.curr_epoch > 4000:
-                best_ema_loss = ema_total_loss
-                to_remove = glob.glob(os.path.join(self.model_save_path, f"best_ema_model_*"))
-                if to_remove:
-                    os.remove(to_remove[0])
-                state_dicts = {
-                    'denoise_fn': self.ema_model.state_dict(), 
-                    'num_schedule':self.ema_num_schedule.state_dict(), 
-                    'cat_schedule': self.ema_cat_schedule.state_dict(),
-                }
-                torch.save(state_dicts, os.path.join(self.model_save_path, f'best_ema_model_{np.round(ema_total_loss,4)}_{epoch+1}.pt'))
-            
+            # Save the best ema ckpt (selection now driven by held-out EMA loss)
+            if self.curr_epoch > self.best_ckpt_start_epoch:
+                if ema_total_loss < best_ema_loss:
+                    best_ema_loss = ema_total_loss
+                    es_patience = 0
+                    to_remove = glob.glob(os.path.join(self.model_save_path, f"best_ema_model_*"))
+                    if to_remove:
+                        os.remove(to_remove[0])
+                    state_dicts = {
+                        'denoise_fn': self.ema_model.state_dict(),
+                        'num_schedule':self.ema_num_schedule.state_dict(),
+                        'cat_schedule': self.ema_cat_schedule.state_dict(),
+                    }
+                    torch.save(state_dicts, os.path.join(self.model_save_path, f'best_ema_model_{np.round(ema_total_loss,4)}_{epoch+1}.pt'))
+                else:
+                    es_patience += 1
+
             # Evaluate Sample Quality
             if (epoch+1) % self.check_val_every == 0:
                 state_dicts = {
@@ -273,13 +296,13 @@ class Trainer:
                 torch.save(state_dicts, os.path.join(self.model_save_path, f'model_{epoch+1}.pt'))
                 
                 print_with_bar(f"Routine Generation Evaluation every {self.check_val_every}, currently at epoch #{epoch+1}, wiht total_loss={total_loss}.")
-                out_metrics, _, _ = self.evaluate_generation(save_metric_details=True, plot_density=True)
+                out_metrics, _, _ = self.evaluate_generation(save_metric_details=True, plot_density=True, num_samples_override=self.val_sample_size)
                 log_dict.update(out_metrics)
                 print(f"Eval Resutls of the Non-EMA model:\n {out_metrics}")
 
                 # Evaluate the EMA model
                 torch.save(self.ema_model.state_dict(), os.path.join(self.model_save_path, f'ema_model_{epoch+1}.pt'))
-                ema_out_metrics, _, _ = self.evaluate_generation(ema=True, save_metric_details=True, plot_density=True)
+                ema_out_metrics, _, _ = self.evaluate_generation(ema=True, save_metric_details=True, plot_density=True, num_samples_override=self.val_sample_size)
                 log_dict.update({
                     "ema": ema_out_metrics,
                 })
@@ -287,6 +310,14 @@ class Trainer:
             
             # Submit logs
             self.logger.log(log_dict)
+
+            # Early stopping on the held-out EMA loss.
+            if self.early_stop_patience and es_patience >= self.early_stop_patience:
+                print_with_bar(
+                    f"EARLY STOP at epoch {epoch+1}: held-out EMA loss did not improve "
+                    f"for {es_patience} epochs (best={np.round(best_ema_loss,4)})."
+                )
+                break
 
         end_time = time.time()
         print_with_bar(f"Ending Trainnig Loop, totoal training time = {end_time - start_time}")
@@ -398,11 +429,13 @@ class Trainer:
         self.logger.log(out_metrics)
         print(out_metrics)
 
-    def evaluate_generation(self, save_metric_details=False, plot_density=False, ema=False):
+    def evaluate_generation(self, save_metric_details=False, plot_density=False, ema=False, num_samples_override=None):
         self.diffusion.eval()
-        
+
         # Sample a synthetic table
-        num_samples = self.num_samples_to_generate if self.num_samples_to_generate else self.metrics.real_data_size # By default, num_samples_to_generate is not specified. In this case, we generate the same number of samples as the real dataset. This approach is consistently used across all experiments in the paper.
+        # num_samples_override caps in-training sampling cost (real_data_size can be
+        # millions of rows for large datasets, making routine validation the bottleneck).
+        num_samples = num_samples_override or (self.num_samples_to_generate if self.num_samples_to_generate else self.metrics.real_data_size) # By default, num_samples_to_generate is not specified. In this case, we generate the same number of samples as the real dataset. This approach is consistently used across all experiments in the paper.
         syn_df = self.sample_synthetic(num_samples, ema=ema)
         
         # Save the sample
@@ -435,12 +468,17 @@ class Trainer:
         
         # Plot density figures
         if plot_density:
-            img = self.metrics.plot_density(syn_df_loaded)
-            path = os.path.join(save_path, "density_plots.png")
-            img.save(path)
-            print(
-                f"The density plots are saved at {path}"
-            )
+            try:
+                img = self.metrics.plot_density(syn_df_loaded)
+                path = os.path.join(save_path, "density_plots.png")
+                img.save(path)
+                print(
+                    f"The density plots are saved at {path}"
+                )
+            except Exception as e:
+                # Density plot is a cosmetic diagnostic; do not let a missing
+                # image backend (e.g. kaleido/Chrome) abort training.
+                print(f"[warn] skipping density plot: {e}")
         return out_metrics, extras, syn_df
         
 

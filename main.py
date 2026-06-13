@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--exp_name', type=str, default=None, help='Experiment name, used to name log directories and the wandb run name')
     parser.add_argument('--deterministic', action='store_true', help='Whether to make the entire process deterministic, i.e., fix global random seeds')
     parser.add_argument('--resume', action='store_true', help='In train mode, resume from the latest model_*.pt checkpoint under ckpt/<dataname>/<exp_name> if one exists')
+    parser.add_argument('--config_path', type=str, default=None, help='Path to a TabDiff TOML config; overrides the default tabdiff/configs/tabdiff_configs.toml (enables parallel runs with per-model configs)')
     
     # Configs for tabdiff
     parser.add_argument('--y_only', action='store_true', help='Train guidance model that only model the target column')
