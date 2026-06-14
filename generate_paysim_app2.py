@@ -104,14 +104,19 @@ def write_chunk(df, out_path, wrote_header):
 
 
 @torch.no_grad()
-def gen_reject(diffusion, ds, info, n_fraud, batch, out_path, target_col):
+def gen_reject(diffusion, ds, info, n_fraud, batch, out_path, target_col, max_seconds=None):
     wrote = False
     kept = 0
+    gen_total = 0
     t0 = time.time()
     while kept < n_fraud:
+        if max_seconds and (time.time() - t0) > max_seconds:
+            print(f"[reject] TIME CAP {max_seconds}s hit at {kept}/{n_fraud} "
+                  f"(generated {gen_total:,}, yield {kept/max(gen_total,1):.4f}) — stopping", flush=True)
+            break
         sample = diffusion.sample_all(batch, batch, keep_nan_samples=True)
-        # drop all-zero (NaN) rows
-        sample = sample[sample.sum(dim=1) != 0]
+        sample = sample[sample.sum(dim=1) != 0]   # drop all-zero (NaN) rows
+        gen_total += batch
         if sample.shape[0] == 0:
             continue
         df = decode(sample, ds, info)
@@ -122,7 +127,7 @@ def gen_reject(diffusion, ds, info, n_fraud, batch, out_path, target_col):
         df = df.iloc[:take]
         wrote = write_chunk(df, out_path, wrote)
         kept += len(df)
-        print(f"[reject] kept {kept}/{n_fraud}  ({time.time()-t0:.0f}s)", flush=True)
+        print(f"[reject] kept {kept}/{n_fraud}  gen {gen_total:,}  ({time.time()-t0:.0f}s)", flush=True)
     return kept
 
 
@@ -170,6 +175,7 @@ def main():
     ap.add_argument("--n_fraud", type=int, default=1_600_000)
     ap.add_argument("--mode", choices=["reject", "conditional"], required=True)
     ap.add_argument("--batch", type=int, default=None)
+    ap.add_argument("--max_seconds", type=int, default=None, help="wall-clock cap for reject sampling")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -194,7 +200,7 @@ def main():
 
     t0 = time.time()
     if args.mode == "reject":
-        kept = gen_reject(diffusion, ds, info, args.n_fraud, batch, out_path, target_col)
+        kept = gen_reject(diffusion, ds, info, args.n_fraud, batch, out_path, target_col, args.max_seconds)
     else:
         kept = gen_conditional(diffusion, ds, info, args.n_fraud, batch, out_path, target_col)
     print(f"[{args.dataname}] DONE: {kept} fraud rows in {time.time()-t0:.0f}s -> {out_path}", flush=True)

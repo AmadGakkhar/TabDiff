@@ -19,16 +19,16 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-SPLIT = "/home/amad/projects/datasets/paysim/splits/0"
+import sys, glob
+SPLIT_ID = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+PFX = f"ps{SPLIT_ID}"
+SPLIT = f"/home/amad/projects/datasets/paysim/splits/{SPLIT_ID}"
 DROP = ["nameOrig", "nameDest"]
 NUM = ["step", "amount", "oldbalanceOrg", "newbalanceOrig", "oldbalanceDest", "newbalanceDest"]
 CAT = ["type", "isFlaggedFraud"]
 FEATS = NUM + CAT
-SETS = {
-    "d1": "tabdiff/synthetic_fraud/ps0_d1/fraud_1600000.csv",
-    "d2_v1": "tabdiff/synthetic_fraud/ps0_d2/fraud_1600000.v1_400ep.csv",
-    "d3": "tabdiff/synthetic_fraud/ps0_d3/fraud_1600000.csv",
-}
+SETS = {f.split("/")[-2].replace(PFX + "_", ""): f
+        for f in sorted(glob.glob(f"tabdiff/synthetic_fraud/{PFX}_d*/fraud_1600000.csv"))}
 
 
 def real_fraud(path):

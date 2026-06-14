@@ -39,14 +39,17 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 
 warnings.filterwarnings("ignore")
 
-SPLIT   = "/home/amad/projects/datasets/paysim/splits/0"
+import sys
+SPLIT_ID = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+PFX      = f"ps{SPLIT_ID}"
+SPLIT   = f"/home/amad/projects/datasets/paysim/splits/{SPLIT_ID}"
 DROP    = ["nameOrig", "nameDest"]
 NUM     = ["step", "amount", "oldbalanceOrg", "newbalanceOrig", "oldbalanceDest", "newbalanceDest"]
 CAT     = ["type", "isFlaggedFraud"]
 FEATS   = NUM + CAT
 MONEY   = ["amount", "oldbalanceOrg", "newbalanceOrig", "oldbalanceDest", "newbalanceDest"]
 FRAUD_TYPES = {"TRANSFER", "CASH_OUT"}      # the only types real paysim fraud ever takes
-OUTDIR  = "eval/paysim_app2"
+OUTDIR  = f"eval/paysim_app2_{PFX}" if SPLIT_ID else "eval/paysim_app2"
 SAMPLE  = 50000      # per-set subsample for plots/metrics
 DCR_Q   = 5000       # query points for DCR
 
@@ -60,7 +63,7 @@ def load_real(path):
 
 def find_sets():
     sets = {}
-    for f in sorted(glob.glob("tabdiff/synthetic_fraud/ps0_d*/fraud_1600000.csv")):
+    for f in sorted(glob.glob(f"tabdiff/synthetic_fraud/{PFX}_d*/fraud_1600000.csv")):
         dose = f.split("/")[-2]            # ps0_dX
         sets[dose] = f
     return sets

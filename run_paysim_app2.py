@@ -20,18 +20,25 @@ import sys
 import subprocess
 from datetime import datetime
 
-N_FRAUD = 1_600_000
-
 # Split index from argv (default 0); prefix ps<SPLIT_ID> keeps splits separate.
 SPLIT_ID = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 PFX = f"ps{SPLIT_ID}"
 
+# Reject-only generation. Target 100k fraud rows from EVERY dose. Reject yield =
+# training fraud share (~2,440 gen rows/s total), so realistic outcomes under the
+# 4h cap: d1 (~100%) hits 100k in <1min; d2 (~0.51%) ~2.2h -> 100k; d3 (~0.26%)
+# ~4h -> ~90k; d4 (~0.13%) cap-bound -> ~45k. Low-yield doses produce PARTIAL
+# counts by design (training is uncapped; only generation is time-capped).
+TARGETS = {"d1": 100_000, "d2": 100_000, "d3": 100_000, "d4": 100_000}
+SAMPLE_BATCH = 32768
+GEN_MAX_SECONDS = 14_400   # 4h wall-clock cap per generation (budget guard)
+
 # (dataname, gpu, generation mode)
 JOBS = [
     (f"{PFX}_d1", 0, "reject"),
-    (f"{PFX}_d2", 1, "conditional"),
-    (f"{PFX}_d3", 2, "conditional"),
-    (f"{PFX}_d4", 3, "conditional"),
+    (f"{PFX}_d2", 1, "reject"),
+    (f"{PFX}_d3", 2, "reject"),
+    (f"{PFX}_d4", 3, "reject"),
 ]
 
 LOGDIR = f"logs/paysim_app2_{PFX}"
@@ -92,11 +99,14 @@ def worker(dataname, gpu, mode):
         return
 
     # ---- Generate ----
+    dose = dataname.split("_")[-1]            # d1..d4
+    target = TARGETS[dose]
     t1 = time.time()
-    log(f">>> [{dataname}] GENERATE ({mode}) {N_FRAUD} fraud on GPU {gpu}")
+    log(f">>> [{dataname}] GENERATE ({mode}) {target} fraud on GPU {gpu}")
     grc = run(["python", "-u", "generate_paysim_app2.py",
                "--dataname", dataname, "--gpu", str(gpu),
-               "--n_fraud", str(N_FRAUD), "--mode", mode],
+               "--n_fraud", str(target), "--mode", mode,
+               "--batch", str(SAMPLE_BATCH), "--max_seconds", str(GEN_MAX_SECONDS)],
               gen_log)
     rec["gen_sec"] = time.time() - t1
     rec["gen_rc"] = grc
@@ -107,7 +117,7 @@ def worker(dataname, gpu, mode):
 
 
 def main():
-    log(f"=== paysim Approach 2: train->generate {len(JOBS)} doses, {N_FRAUD} fraud each ===")
+    log(f"=== paysim Approach 2: train->generate {len(JOBS)} doses (reject), targets {TARGETS} ===")
     overall = time.time()
     threads = [threading.Thread(target=worker, args=j, daemon=True) for j in JOBS]
     for t in threads:
@@ -118,7 +128,7 @@ def main():
     summary = {
         "overall_start": datetime.fromtimestamp(overall).strftime("%Y-%m-%d %H:%M:%S"),
         "total_wall_clock": fmt_dur(time.time() - overall),
-        "n_fraud_target": N_FRAUD,
+        "targets": TARGETS,
         "per_dose": results,
     }
     with open(TIMINGS, "w") as f:

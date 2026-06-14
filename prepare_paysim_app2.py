@@ -109,18 +109,17 @@ DOSE_OVERRIDES = {
     # fraud-only (~5.9k train): memorization-prone -> small batch (regularization), strong WD
     "d1": {"dim_t": 256,  "batch_size": 256,   "steps": 3500, "weight_decay": 1e-4, "check_val_every": 500, "reduce_lr_patience": 25,
            "best_ckpt_start_epoch": 300, "early_stop_patience": 0, "val_sample_size": 5000},
-    # Batch sizes chosen from the throughput benchmark: the model is loader-bound so
-    # throughput is ~flat across batch sizes; with early stopping OFF and epochs fixed,
-    # smaller batches are preferred to MAXIMIZE gradient updates/epoch (not to fill VRAM).
-    # +25% majority (~1.15M train): batch 4096 -> ~281 updates/epoch (~225k total)
+    # Restore full epochs (quality) and cut generation targets to fit ~6h/GPU.
+    # d2/d3 get their prior epoch counts; d4 capped at 130 (500 ep = ~13h, can't fit 6h).
+    # +25% majority (~1.15M train, ~14.5s/epoch): 800 ep ≈ 3.2h
     "d2": {"dim_t": 512,  "batch_size": 4096, "steps": 800,  "weight_decay": 1e-4, "check_val_every": 50,  "reduce_lr_patience": 20,
            "best_ckpt_start_epoch": 40,  "early_stop_patience": 0,  "val_sample_size": 50000},
-    # +50% majority (~2.29M train): batch 4096 -> ~560 updates/epoch (~280k total)
+    # +50% majority (~2.29M train, ~27.5s/epoch): 500 ep ≈ 3.8h
     "d3": {"dim_t": 512,  "batch_size": 4096, "steps": 500,  "weight_decay": 1e-5, "check_val_every": 50,  "reduce_lr_patience": 20,
            "best_ckpt_start_epoch": 40,  "early_stop_patience": 0,  "val_sample_size": 50000},
-    # full data (~4.58M train): batch 8192 -> ~560 updates/epoch (~280k total), peak throughput
-    "d4": {"dim_t": 1024, "batch_size": 8192, "steps": 500,  "weight_decay": 0,    "check_val_every": 40,  "reduce_lr_patience": 15,
-           "best_ckpt_start_epoch": 30,  "early_stop_patience": 0,  "val_sample_size": 50000},
+    # full data (~4.58M train, ~96s/epoch): 500 ep ≈ 13h (epoch cap removed — train to convergence)
+    "d4": {"dim_t": 1024, "batch_size": 8192, "steps": 500,  "weight_decay": 0,    "check_val_every": 30,  "reduce_lr_patience": 15,
+           "best_ckpt_start_epoch": 20,  "early_stop_patience": 0,  "val_sample_size": 50000},
 }
 
 
