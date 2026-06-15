@@ -39,8 +39,10 @@ class Trainer:
             early_stop_patience=0,            # 0 => disabled; else stop after N epochs w/o held-out EMA-loss improvement
             best_ckpt_start_epoch=4000,       # earliest epoch at which best/best_ema checkpoints may be saved
             val_sample_size=None,             # cap on #samples generated during in-training evaluation (None => real_data_size)
+            select_loss="total",              # held-out signal for best_ema/early-stop: "total" | "cat" | "num"
             **kwargs
     ):
+        self.select_loss = select_loss
         self.y_only = y_only
         self.diffusion = diffusion
         self.ema_model = deepcopy(self.diffusion._denoise_fn)
@@ -263,16 +265,37 @@ class Trainer:
             ema_mloss, ema_gloss = self.compute_loss()
             self.to_model(curr_model, curr_num_schedule, curr_cat_schedule)
             ema_total_loss = ema_mloss + ema_gloss
+            # Scalar that drives best_ema selection + early stopping. Defaults to the
+            # total held-out loss; "cat"/"num" let a run ignore a held-out component
+            # whose signal is broken (e.g. quantile-normalizer tail blowups in the
+            # numerical head that swamp the total and corrupt model selection).
+            if self.select_loss == "cat":
+                ema_select_loss = ema_gloss
+            elif self.select_loss == "num":
+                ema_select_loss = ema_mloss
+            else:
+                ema_select_loss = ema_total_loss
             ema_loss_dict = {
                 "ema_loss/c_loss": ema_gloss,
                 "ema_loss/d_loss": ema_mloss,
                 "ema_loss/total_loss": ema_total_loss
             }
-            
+
+            # Always-on per-epoch loss CSV (wandb-independent) so loss curves —
+            # including the held-out EMA loss — are recoverable after the run.
+            _loss_csv = os.path.join(self.model_save_path, "loss_history.csv")
+            if not os.path.exists(_loss_csv):
+                with open(_loss_csv, "w") as _f:
+                    _f.write("epoch,lr,train_d_loss,train_c_loss,train_total,"
+                             "heldout_ema_d_loss,heldout_ema_c_loss,heldout_ema_total\n")
+            with open(_loss_csv, "a") as _f:
+                _f.write(f"{epoch+1},{curr_lr},{mloss},{gloss},{total_loss},"
+                         f"{ema_mloss},{ema_gloss},{ema_total_loss}\n")
+
             # Save the best ema ckpt (selection now driven by held-out EMA loss)
             if self.curr_epoch > self.best_ckpt_start_epoch:
-                if ema_total_loss < best_ema_loss:
-                    best_ema_loss = ema_total_loss
+                if ema_select_loss < best_ema_loss:
+                    best_ema_loss = ema_select_loss
                     es_patience = 0
                     to_remove = glob.glob(os.path.join(self.model_save_path, f"best_ema_model_*"))
                     if to_remove:
@@ -282,7 +305,7 @@ class Trainer:
                         'num_schedule':self.ema_num_schedule.state_dict(),
                         'cat_schedule': self.ema_cat_schedule.state_dict(),
                     }
-                    torch.save(state_dicts, os.path.join(self.model_save_path, f'best_ema_model_{np.round(ema_total_loss,4)}_{epoch+1}.pt'))
+                    torch.save(state_dicts, os.path.join(self.model_save_path, f'best_ema_model_{np.round(ema_select_loss,4)}_{epoch+1}.pt'))
                 else:
                     es_patience += 1
 
