@@ -177,6 +177,11 @@ def main():
     ap.add_argument("--batch", type=int, default=None)
     ap.add_argument("--max_seconds", type=int, default=None, help="wall-clock cap for reject sampling")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--out_dir", default="tabdiff/synthetic_fraud",
+                    help="base output directory (default kept for backward compat; "
+                         "use e.g. tabdiff/synthetic_diabetes for non-fraud datasets)")
+    ap.add_argument("--label", default="fraud",
+                    help="output filename stem (default 'fraud'); file is <label>_<n_fraud>.csv")
     args = ap.parse_args()
 
     device = f"cuda:{args.gpu}" if (args.gpu != -1 and torch.cuda.is_available()) else "cpu"
@@ -189,9 +194,9 @@ def main():
     if target_col is None:
         target_col = {int(k): v for k, v in info["idx_name_mapping"].items()}[info["target_col_idx"][0]]
 
-    out_dir = f"tabdiff/synthetic_fraud/{args.dataname}"
+    out_dir = f"{args.out_dir}/{args.dataname}"
     os.makedirs(out_dir, exist_ok=True)
-    out_path = args.out or f"{out_dir}/fraud_{args.n_fraud}.csv"
+    out_path = args.out or f"{out_dir}/{args.label}_{args.n_fraud}.csv"
     if os.path.exists(out_path):
         os.remove(out_path)
 
