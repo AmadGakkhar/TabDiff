@@ -29,9 +29,8 @@ do_split(){  # split gpu
     --config_path "tabdiff/configs/tabdiff_configs_$n.toml" --exp_name "$n" --no_wandb --resume \
     > "$LOG/train_$n.log" 2>&1 || { say "!!! [$n] TRAIN FAILED"; return 1; }
 
-  say "<<< [$n] TRAIN done; GENERATE $five_x (reject) -> $out"
-  python -u generate_paysim_app2.py --dataname "$n" --gpu "$g" \
-    --n_fraud "$five_x" --mode reject --batch 8192 --out "$out" \
+  say "<<< [$n] TRAIN done; GENERATE $five_x -> $out"
+  python -u gen_gmsc.py --split "$s" --n "$five_x" --gpu "$g" --batch 8192 --out "$out" \
     > "$LOG/gen_$n.log" 2>&1 || { say "!!! [$n] GENERATE FAILED"; return 1; }
 
   say "<<< [$n] GENERATE done -> $out"
