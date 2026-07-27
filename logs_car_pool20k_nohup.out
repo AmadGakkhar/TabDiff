@@ -1,0 +1,16 @@
+[2026-06-10 10:19:42] === Generate 5000 fraud/model from trained car_d* checkpoints ===
+[2026-06-10 10:19:42] >>> [car_d1] generate 5000 (chunk=6000, max_iters=4)
+[2026-06-10 10:20:18] <<< [car_d1] done -> synthetic_outputs/car_app2/pool20k/car_d1_fraud.csv (5000 rows)
+[2026-06-10 10:20:18] >>> [car_d2] generate 5000 (chunk=8192, max_iters=12)
+[2026-06-10 10:21:09] <<< [car_d2] done -> synthetic_outputs/car_app2/pool20k/car_d2_fraud.csv (5000 rows)
+[2026-06-10 10:21:09] >>> [car_d3] generate 5000 (chunk=8192, max_iters=30)
+[2026-06-10 10:24:05] <<< [car_d3] done -> synthetic_outputs/car_app2/pool20k/car_d3_fraud.csv (5000 rows)
+[2026-06-10 10:24:05] >>> [car_d4] generate 5000 (chunk=50000, max_iters=8)
+[2026-06-10 10:28:49] <<< [car_d4] done -> synthetic_outputs/car_app2/pool20k/car_d4_fraud.csv (5000 rows)
+[2026-06-10 10:28:49] === pool -> synthetic_outputs/car_app2/pooled_fraud_20k.csv ===
+Pooled 20000 rows from 4 models | class counts: {1: 20000}
+  model 1: 5000 fraud rows  <-  synthetic_outputs/car_app2/pool20k/car_d1_fraud.csv
+  model 2: 5000 fraud rows  <-  synthetic_outputs/car_app2/pool20k/car_d2_fraud.csv
+  model 3: 5000 fraud rows  <-  synthetic_outputs/car_app2/pool20k/car_d3_fraud.csv
+  model 4: 5000 fraud rows  <-  synthetic_outputs/car_app2/pool20k/car_d4_fraud.csv
+[2026-06-10 10:28:50] === done -> synthetic_outputs/car_app2/pooled_fraud_20k.csv ===

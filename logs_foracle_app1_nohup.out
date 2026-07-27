@@ -1,0 +1,40 @@
+[2026-06-10 11:43:13] === Stage 1: build partitions + register datasets ===
+Source: 12336 rows | fraud=738 non-fraud=11598
+Each member: 738 fraud + 738 non-fraud = 1476 rows (~50% fraud)
+[foracle_m1] already registered — skipping
+[foracle_m2] already registered — skipping
+[foracle_m3] already registered — skipping
+[foracle_m4] already registered — skipping
+
+Member config written -> tabdiff/configs/tabdiff_configs_foracle_app1.toml
+
+Preparation complete. Run run_foracle_app1.sh to train and generate.
+[2026-06-10 11:43:15] Original config backed up -> tabdiff/configs/tabdiff_configs.toml.bak
+[2026-06-10 11:43:15] === Stage 2+3: train + generate (M=4, 625 fraud/member) ===
+[2026-06-10 11:43:15] >>> [foracle_m1] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-10 12:22:38] <<< [foracle_m1] TRAIN done
+[2026-06-10 12:22:38] >>> [foracle_m1] GENERATE (625 fraud rows, seed=1)
+[2026-06-10 12:23:03] <<< [foracle_m1] GENERATE done -> synthetic_outputs/foracle_app1/member_1_fraud.csv
+[2026-06-10 12:23:03] >>> [foracle_m2] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-10 13:05:29] <<< [foracle_m2] TRAIN done
+[2026-06-10 13:05:29] >>> [foracle_m2] GENERATE (625 fraud rows, seed=2)
+[2026-06-10 13:06:00] <<< [foracle_m2] GENERATE done -> synthetic_outputs/foracle_app1/member_2_fraud.csv
+[2026-06-10 13:06:00] >>> [foracle_m3] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-10 13:47:54] <<< [foracle_m3] TRAIN done
+[2026-06-10 13:47:54] >>> [foracle_m3] GENERATE (625 fraud rows, seed=3)
+[2026-06-10 13:48:25] <<< [foracle_m3] GENERATE done -> synthetic_outputs/foracle_app1/member_3_fraud.csv
+[2026-06-10 13:48:25] >>> [foracle_m4] TRAIN start (member config: dim_t=512, batch=256, steps=2000)
+[2026-06-10 14:30:50] <<< [foracle_m4] TRAIN done
+[2026-06-10 14:30:50] >>> [foracle_m4] GENERATE (625 fraud rows, seed=4)
+[2026-06-10 14:31:26] <<< [foracle_m4] GENERATE done -> synthetic_outputs/foracle_app1/member_4_fraud.csv
+[2026-06-10 14:31:26] === Stage 4: pool member outputs -> synthetic_outputs/foracle_app1/pooled_fraud.csv ===
+Pooled 2500 rows from 4 members | class counts: {1: 2500}
+  member 1: 625 fraud rows  <-  synthetic_outputs/foracle_app1/member_1_fraud.csv
+  member 2: 625 fraud rows  <-  synthetic_outputs/foracle_app1/member_2_fraud.csv
+  member 3: 625 fraud rows  <-  synthetic_outputs/foracle_app1/member_3_fraud.csv
+  member 4: 625 fraud rows  <-  synthetic_outputs/foracle_app1/member_4_fraud.csv
+[2026-06-10 14:31:27] === Approach 1 (fraud_oracle) run finished ===
+[2026-06-10 14:31:27]     Pooled synthetic fraud  -> synthetic_outputs/foracle_app1/pooled_fraud.csv
+[2026-06-10 14:31:27]     Logs                    -> logs/foracle_app1/
+[2026-06-10 14:31:27]     Per-member fraud CSVs   -> synthetic_outputs/foracle_app1/member_*_fraud.csv
+[2026-06-10 14:31:27] Original TabDiff config restored.

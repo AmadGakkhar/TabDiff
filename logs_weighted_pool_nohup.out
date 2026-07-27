@@ -1,0 +1,24 @@
+[2026-06-09 14:27:27] === Stage 1: build reservoirs (2500 fraud/model) ===
+[2026-06-09 14:27:27] >>> [expv01_d1] generate 2500 (chunk=6000, max_iters=8)
+[2026-06-09 14:28:09] <<< [expv01_d1] reservoir done -> synthetic_outputs/expv01_app2/reservoirs/expv01_d1_fraud.csv (2500 rows)
+[2026-06-09 14:28:09] >>> [expv01_d2] generate 2500 (chunk=8192, max_iters=15)
+[2026-06-09 14:29:32] <<< [expv01_d2] reservoir done -> synthetic_outputs/expv01_app2/reservoirs/expv01_d2_fraud.csv (2500 rows)
+[2026-06-09 14:29:32] >>> [expv01_d3] generate 2500 (chunk=8192, max_iters=25)
+[2026-06-09 14:32:16] <<< [expv01_d3] reservoir done -> synthetic_outputs/expv01_app2/reservoirs/expv01_d3_fraud.csv (2500 rows)
+[2026-06-09 14:32:16] >>> [expv01_d4] generate 2500 (chunk=50000, max_iters=8)
+[2026-06-09 14:45:26] <<< [expv01_d4] reservoir done -> synthetic_outputs/expv01_app2/reservoirs/expv01_d4_fraud.csv (2500 rows)
+[2026-06-09 14:45:26] === Stage 2: score + weight + pool -> synthetic_outputs/expv01_app2/pooled_fraud_weighted.csv ===
+Real: 12336 rows | fraud=738 | 7 num + 24 cat features
+
+model        avail   fidel   cover   authn   align    QUAL  weight   rows
+-------------------------------------------------------------------------
+expv01_d1     2500   0.942   0.989   0.996   0.666   0.887   0.252    632
+expv01_d2     2500   0.952   1.000   0.968   0.652   0.880   0.250    625
+expv01_d3     2500   0.954   1.000   0.976   0.645   0.880   0.250    625
+expv01_d4     2500   0.956   1.000   0.928   0.646   0.870   0.247    618
+
+Pooled 2500 rows -> synthetic_outputs/expv01_app2/pooled_fraud_weighted.csv
+Report -> synthetic_outputs/expv01_app2/weight_report.json
+[2026-06-09 14:45:32] === done ===
+[2026-06-09 14:45:32]     Weighted pool -> synthetic_outputs/expv01_app2/pooled_fraud_weighted.csv
+[2026-06-09 14:45:32]     Score report  -> synthetic_outputs/expv01_app2/weight_report.json

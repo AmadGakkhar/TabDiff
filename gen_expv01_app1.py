@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--ckpt_path", default=None)
     ap.add_argument("--chunk",     type=int, default=4096, help="Rows generated per iteration")
     ap.add_argument("--max_iters", type=int, default=30)
+    ap.add_argument("--target_col", default=None, help="Target column name (overrides info/default)")
     ap.add_argument("--gpu",       type=int, default=0)
     ap.add_argument("--seed",      type=int, default=42)
     args = ap.parse_args()
@@ -62,8 +63,11 @@ def main():
     trainer, info = build_trainer(args.dataname, args.exp_name, ckpt_path, device)
     trainer.diffusion.eval()
 
-    col_names = info.get("column_names")
-    tcol = col_names[info["target_col_idx"][0]] if col_names else "FraudFound_P"
+    if args.target_col:
+        tcol = args.target_col
+    else:
+        col_names = info.get("column_names")
+        tcol = col_names[info["target_col_idx"][0]] if col_names else "FraudFound_P"
     print(f"Target column: {tcol} | collecting {args.n_fraud} fraud rows | device={device}", flush=True)
 
     fraud_parts = []
