@@ -1,0 +1,21 @@
+# Installed on top of the AWS prebuilt PyTorch DLC (torch/torchvision/torchaudio already
+# present there). Mirrors the pip section of tabdiff.yaml minus the torch stack. wandb is
+# required because tabdiff/main.py imports it unconditionally at module load; --no_wandb
+# only disables logging at runtime, it does not skip the import.
+numpy<2
+pandas
+scikit-learn
+scipy
+icecream
+xlrd
+tomli-w
+tomli==2.0.1
+category_encoders
+imbalanced-learn
+ml_collections
+sdmetrics
+prdc
+rdt
+openpyxl
+xgboost
+wandb

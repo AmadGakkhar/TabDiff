@@ -33,3 +33,5 @@ dependencies:
     - xgboost
     - wandb==0.17.3
     - kaleido
+    - sagemaker
+    - boto3

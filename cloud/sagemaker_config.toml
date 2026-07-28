@@ -1,0 +1,31 @@
+# Configuration for the TabDiff SageMaker launcher (cloud/launch.py).
+# Fill these in before using --backend cloud. For --backend local (SageMaker local mode)
+# only `region` and Docker are strictly needed; the DLC image is still pulled from AWS ECR,
+# so valid AWS credentials must be configured (aws configure / env vars). See docs/sagemaker.md.
+
+# AWS region for image resolution and (cloud) job execution.
+region = "us-east-1"
+
+# --- cloud backend only ---
+# S3 bucket for job inputs/outputs (create it yourself: aws s3 mb s3://<bucket>).
+s3_bucket = "sagemaker-us-east-1-652765021279"
+# SageMaker execution role ARN (trusts sagemaker.amazonaws.com; needs SageMaker + S3 access).
+# Local mode ignores this, but the SDK still requires a value, so a placeholder is fine there.
+role_arn = "arn:aws:iam::652765021279:role/ascend-ml-sagemaker-exec"
+
+# Managed instance types (cloud backend). Generation is short/batch, training is longer.
+train_instance_type = "ml.g4dn.xlarge"
+generate_instance_type = "ml.g4dn.xlarge"
+
+# Common job settings.
+instance_count = 1
+volume_size_gb = 50
+max_run_seconds = 86400
+base_job_name = "tabdiff"
+
+# --- optional overrides ---
+# Force CPU even in local mode (skip local_gpu / nvidia-docker).
+force_local_cpu = false
+# Pin a specific DLC / custom image instead of letting the SDK resolve one from
+# framework_version + py_version. Leave empty to auto-resolve.
+image_uri = ""

@@ -8,6 +8,11 @@
 # Stage 4  pool                    — concat + shuffle -> pooled_fraud.csv (2500)
 #
 # Same config-swap-with-trap pattern as run_expv01_app2.sh.
+#
+# Backend: by default the train/generate stages run locally as plain Python (unchanged).
+# Set BACKEND=local or BACKEND=cloud to route those stages through cloud/launch.py
+# (SageMaker local mode / managed cloud). See docs/sagemaker.md.
+#   BACKEND=cloud ./run_car_app2.sh
 
 set -uo pipefail
 cd "$(dirname "$0")"
@@ -68,11 +73,20 @@ for d in car_d1 car_d2 car_d3 car_d4; do
     fi
 
     log ">>> [$d] TRAIN start ($LABEL)"
-    cp "$MODEL_CFG" "$ORIG_CFG"
-    python -u main.py --dataname "$d" --mode train --no_wandb --exp_name "$d" --resume \
-        >> "$TRAIN_LOG" 2>&1
-    rc=$?
-    cp "$BAK_CFG" "$ORIG_CFG"
+    if [[ -z "${BACKEND:-}" ]]; then
+        # Original local behavior: swap the default config in place, run, restore.
+        cp "$MODEL_CFG" "$ORIG_CFG"
+        python -u main.py --dataname "$d" --mode train --no_wandb --exp_name "$d" --resume \
+            >> "$TRAIN_LOG" 2>&1
+        rc=$?
+        cp "$BAK_CFG" "$ORIG_CFG"
+    else
+        # SageMaker (local or cloud): pass the per-model config via --config_path; no swap.
+        python -u cloud/launch.py train --backend "$BACKEND" \
+            --dataname "$d" --exp_name "$d" --resume --config_path "$MODEL_CFG" \
+            >> "$TRAIN_LOG" 2>&1
+        rc=$?
+    fi
     if [[ $rc -ne 0 ]]; then
         log "!!! [$d] TRAIN FAILED (exit $rc) — see $TRAIN_LOG — aborting"
         exit 1
@@ -80,17 +94,33 @@ for d in car_d1 car_d2 car_d3 car_d4; do
     log "<<< [$d] TRAIN done"
 
     log ">>> [$d] GENERATE ($N_FRAUD_PER_MODEL fraud rows, chunk=${CHUNK[$d]}, max_iters=${MAXITERS[$d]})"
-    python -u gen_expv01_app1.py \
-        --dataname   "$d" \
-        --exp_name   "$d" \
-        --n_fraud    "$N_FRAUD_PER_MODEL" \
-        --out        "$OUT" \
-        --target_col "$TARGET_COL" \
-        --chunk      "${CHUNK[$d]}" \
-        --max_iters  "${MAXITERS[$d]}" \
-        --seed       42 \
-        > "$GEN_LOG" 2>&1
-    rc=$?
+    if [[ -z "${BACKEND:-}" ]]; then
+        python -u gen_expv01_app1.py \
+            --dataname   "$d" \
+            --exp_name   "$d" \
+            --n_fraud    "$N_FRAUD_PER_MODEL" \
+            --out        "$OUT" \
+            --target_col "$TARGET_COL" \
+            --chunk      "${CHUNK[$d]}" \
+            --max_iters  "${MAXITERS[$d]}" \
+            --seed       42 \
+            > "$GEN_LOG" 2>&1
+        rc=$?
+    else
+        # --gpu is managed by the container; do not pass it here.
+        python -u cloud/launch.py generate --backend "$BACKEND" \
+            --gen-script gen_expv01_app1.py \
+            --dataname   "$d" \
+            --exp_name   "$d" \
+            --n_fraud    "$N_FRAUD_PER_MODEL" \
+            --out        "$OUT" \
+            --target_col "$TARGET_COL" \
+            --chunk      "${CHUNK[$d]}" \
+            --max_iters  "${MAXITERS[$d]}" \
+            --seed       42 \
+            > "$GEN_LOG" 2>&1
+        rc=$?
+    fi
     if [[ $rc -ne 0 ]]; then
         log "!!! [$d] GENERATE FAILED (exit $rc) — see $GEN_LOG — aborting"
         exit 1
